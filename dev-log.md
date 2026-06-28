@@ -122,6 +122,39 @@ Log ini mencatat setiap fase pengembangan: pekerjaan yang dilakukan, tantangan y
 
 ---
 
+## Fase 4 — Task 5, 6, dan 7: Integrasi Komunikasi TCP & HTTP Gateway
+
+**Tanggal:** Sesi implementasi keempat
+
+### Pekerjaan yang Dilakukan
+
+#### Task 5.1, 5.2, 5.3 — TCP Server Inventory & Entry Point
+- Mengimplementasikan `TcpServer` di `inventory/server/tcpServer.js` berbasis modul `net`.
+- Menerapkan arsitektur stream berbasis *buffer* untuk menangani isu fragmentasi jaringan (memisahkan *chunk* masuk berdasarkan delimiter karakter `\n`).
+- Menulis property test (`fc.asyncProperty`) untuk memastikan penggabungan fragmen *JSON* dalam ukuran acak tak pernah gagal, dengan toleransi terhadap malformasi payload. Test lulus 100%.
+- Menyatukan lapis Data (`DB`), Bisnis (`InventoryService`), dan Jaringan (`TcpServer`) ke dalam *entry point* `inventory/index.js`. 
+
+#### Task 6.1, 6.2, 6.3 — Request Correlator & TCP Client
+- Mengembangkan `RequestCorrelator` yang bertugas memetakan balasan asinkron TCP ke HTTP Promise berdasarkan parameter `requestId`.
+- Membangun Property Test korelasi di mana pesanan yang dilontarkan bersamaan dibalas dengan penundaan `setTimeout` acak, memastikan bahwa tak ada *Promise* yang menyilang (*no crossover*). Lulus 100%.
+- Membangun `TcpClient` lengkap dengan kapabilitas auto-reconnect. Apabila koneksi terputus, ia tak hanya mencoba menyambung ulang tiap detik, melainkan secara sigap memanggil `correlator.rejectAll()` untuk melepas ikatan HTTP yang pending, mengubah responsnya menjadi 503 secara instan alih-alih menggantung selamanya.
+
+#### Task 7.1, 7.2, 7.3, 7.4 — Gateway HTTP Server & Middleware
+- Membuat Express Middleware `validatePayload` (`gateway/middleware/validatePayload.js`) untuk mem-filter parameter `productId` dan `quantity`.
+- Menerapkan Property Test untuk Middleware ini. Seluruh muatan terlarang *(negatif, float, spasi kosong, dll.)* dipastikan ditolak *(HTTP 400)*.
+- Membuat desain *Factory Function* di rute Express (`gateway/routes/orderRoutes.js`) guna menginjeksi `TcpClient` dan `RequestCorrelator`.
+- Menyatukan semuanya pada fondasi `gateway/index.js`, sebuah Gateway HTTP (pada port 3000) terpasang penangkap `uncaughtException` yang menembak TCP Server Inventori (port 4000) dan menanti balasannya.
+
+### Tantangan
+- Terdapat ketiadaan fungsi `rejectAll` pada implementasi draf awal `RequestCorrelator`, yang akan menyebabkan error saat `TcpClient` terputus dan memanggilnya.
+- Penulisan sintaks Property Test `fast-check` versi asinkron cukup riskan terhadap kesalahan format peletakan `predicate` (yang memicu `TypeError: p is not a function`).
+
+### Solusi
+- Menambahkan metode `rejectAll` dan `reject` pada correlator yang mengiterasi seluruh iterasi Map memori, membersihkan timer (mencegah *memory leak*), dan membersihkan entri secara massal.
+- Mengoreksi penulisan `fc.property()` dan `fc.asyncProperty()` dengan penempatan struktur parameter *fat-arrow function* yang tepat di argumen terakhir.
+
+---
+
 ## Status Saat Ini
 
 | Task | Status |
@@ -129,11 +162,11 @@ Log ini mencatat setiap fase pengembangan: pekerjaan yang dilakukan, tantangan y
 | 1. Setup proyek | ✅ Selesai |
 | 2. Inventory DB Layer | ✅ Selesai (termasuk semua optional PBT) |
 | 3. Mutex + InventoryService | ✅ Selesai |
-| 4. Checkpoint — Inventory Core | ⏳ Menunggu |
-| 5. TCP Server | ⏳ Menunggu |
-| 6. Order Gateway TCP | ⏳ Menunggu |
-| 7. Order Gateway HTTP | ⏳ Menunggu |
-| 8. Checkpoint — Gateway Integration | ⏳ Menunggu |
+| 4. Checkpoint — Inventory Core | ✅ Dilewati (berdasar log semua tes sukses) |
+| 5. TCP Server | ✅ Selesai |
+| 6. Order Gateway TCP | ✅ Selesai |
+| 7. Order Gateway HTTP | ✅ Selesai |
+| 8. Checkpoint — Gateway Integration | ⏳ Menunggu Pemeriksaan |
 | 9. Client Simulator | ⏳ Menunggu |
 | 10. Frontend Dashboard | ⏳ Menunggu |
 | 11. Checkpoint — Dashboard & Simulator | ⏳ Menunggu |

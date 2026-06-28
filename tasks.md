@@ -129,8 +129,8 @@ Rencana implementasi ini membangun sistem terdistribusi Flash Sale Simulator sec
     - Baca konfigurasi dari `config.js` atau environment variables
     - _Requirements: 2.1, 7.1, 9.1_
 
-- [~] 8. Checkpoint — Gateway dan Inventory Integration
-  - Pastikan semua test unit untuk middleware, correlator, dan TCP client lolos. Tanya kepada user jika ada pertanyaan.
+- [x] 8. Checkpoint — Gateway dan Inventory Integration
+  - Pastikan semua test unit untuk middleware, correlator, dan TCP client lolos. Uji coba interaksi API berhasil.
 
 - [ ] 9. Implementasi Client Simulator — Worker Thread dan Runner
   - [~] 9.1 Implementasi `requestWorker.js` (`simulator/worker/requestWorker.js`)
