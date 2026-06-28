@@ -1,0 +1,56 @@
+# ─── Node.js ──────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ─── Build outputs ────────────────────────────────────────────────────────────
+dist/
+build/
+out/
+
+# ─── Test & coverage ─────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+
+# ─── Simulator results (runtime output, not source) ──────────────────────────
+simulator/results/*.json
+
+# ─── Environment & secrets ───────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── OS artifacts ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ─── Editor / IDE ─────────────────────────────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/extensions.json
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ─── Misc ────────────────────────────────────────────────────────────────────
+.cache/
+.parcel-cache/

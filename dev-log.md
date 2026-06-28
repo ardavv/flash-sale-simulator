@@ -1,0 +1,141 @@
+# Development Log — Flash Sale E-Commerce Simulator
+
+Proyek akhir mata kuliah **Komputasi Paralel dan Terdistribusi**.
+Log ini mencatat setiap fase pengembangan: pekerjaan yang dilakukan, tantangan yang ditemui, dan solusi yang diterapkan.
+
+---
+
+## Fase 1 — Task 1: Setup Struktur Proyek dan Konfigurasi Dasar
+
+**Tanggal:** Sesi implementasi pertama
+
+### Pekerjaan yang Dilakukan
+- Membuat seluruh struktur direktori proyek sesuai desain: `simulator/`, `gateway/`, `inventory/`, `dashboard/` beserta subfolder (`runner/`, `worker/`, `metrics/`, `results/`, `routes/`, `middleware/`, `tcp/`, `utils/`, `server/`, `core/`, `db/`, `css/`, `js/`)
+- Membuat `package.json` di root (npm workspaces) dan di tiap komponen dengan dependensi yang tepat:
+  - `gateway/`: `express ^4.18.2`, `uuid ^9.0.0`
+  - `simulator/`: `uuid ^9.0.0`
+  - Dev dependencies semua komponen: `jest ^29.7.0`, `fast-check ^3.14.0`
+- Mengimplementasikan `config.js` di `simulator/`, `gateway/`, dan `inventory/` dengan nilai default yang dapat di-override via environment variables
+- Mengimplementasikan `utils/logger.js` di `gateway/` dan `inventory/` dengan factory `createLogger(component)` yang menghasilkan logger berformat `[ISO_TIMESTAMP] [LEVEL] [COMPONENT] MESSAGE {context_json}`
+- Membuat placeholder files untuk semua modul yang akan diimplementasikan di task berikutnya
+
+### Tantangan
+- Memastikan versi dependensi di-pin secara eksplisit (tidak menggunakan open range) untuk reproducibility
+
+### Solusi
+- Menggunakan versi exact/caret yang sudah stabil (`express ^4.18.2`, `jest ^29.7.0`, `fast-check ^3.14.0`)
+- Logger menggunakan `process.stdout.write` / `process.stderr.write` langsung (bukan `console.log`) untuk kontrol penuh atas format output
+
+---
+
+## Fase 2 — Task 2: Implementasi Inventory Coordinator — Layer Database
+
+**Tanggal:** Sesi implementasi kedua
+
+### Pekerjaan yang Dilakukan
+
+#### Task 2.1 — MasterDB (`inventory/db/masterDB.js`)
+- Mengimplementasikan class `MasterDB extends EventEmitter`
+- Constructor menerima `number` atau `Map<productId, number>` sebagai initial stock
+- `decrementStock(productId, quantity, requestId)` — synchronous, enforces Req 3.9 (stock ≥ 0), emit `'write'` event setelah write berhasil (Req 4.1), track `version` dan `writeLog`
+- `reset(productId, stock?)` — restore ke initial stock atau nilai eksplisit, reset version ke 0
+- `onWrite(listener)` — register EventEmitter listener untuk replikasi
+- **19 unit tests** di `inventory/db/__tests__/masterDB.test.js` — semua passing ✅
+
+#### Task 2.4 — SlaveDB (`inventory/db/slaveDB.js`)
+- Mengimplementasikan class `SlaveDB` — read-only replica
+- Satu-satunya cara update: `applyReplication(productId, stock, timestamp)` (Req 4.3)
+- `getReplicationLag()` — ms sejak replication terakhir di semua produk
+- Menerima timestamp dalam format `Date`, ISO string, atau ms number
+- **14 unit tests** di `inventory/db/__tests__/slaveDB.test.js` — semua passing ✅
+
+#### Task 2.5 — ReplicationManager (`inventory/core/replicationManager.js`)
+- Mengimplementasikan class `ReplicationManager` yang subscribe ke `MasterDB.onWrite`
+- `start()` / `stop()` untuk lifecycle management
+- Configurable `replicationDelayMs` (default 0ms) untuk memenuhi batas < 100ms (Req 4.4)
+- **4 unit tests** — semua passing ✅
+
+#### Task 2.2 — Property Test: Stok Tidak Pernah Negatif (Optional)
+- `fast-check`, 100 runs, `Promise.all` concurrent requests
+- Membuktikan stock ≥ 0 dan conservation invariant untuk semua kombinasi input
+- File: `inventory/core/__tests__/stockSafety.test.js`
+
+#### Task 2.3 — Property Test: Konservasi Stok (Optional)
+- `fast-check`, 200 runs, sequential requests
+- `remainingStock + sum(successfulQuantities) === initialStock` selalu terpenuhi
+- File: `inventory/core/__tests__/stockConservation.test.js`
+
+#### Task 2.6 — Property Test: Konvergensi Replikasi (Optional)
+- `fast-check`, 100 runs, `await sleep(100)` setelah write ops
+- `slaveDB.getStock() === masterDB.getStock()` setelah maksimal 100ms (Req 4.4)
+- File: `inventory/db/__tests__/replication.test.js`
+
+### Tantangan
+- Desain mengharuskan `decrementStock` synchronous (mutex di luar), sementara property test perlu mensimulasikan "concurrent" access
+- Property test replication membutuhkan timeout Jest custom (30 detik) karena 100 runs × 100ms sleep = ~10 detik
+
+### Solusi
+- `decrementStock` tetap synchronous — Node.js single-threaded menjamin atomic execution per call. `Promise.all` dengan `Promise.resolve()` wrapper tetap menguji stock conservation dengan benar karena microtask queue diselesaikan satu per satu
+- Menambahkan `test(..., timeout)` parameter ke PBT replication test untuk menghindari Jest default 5s timeout
+
+---
+
+## Fase 3 — Task 3: Implementasi Inventory Coordinator — Mutex dan Business Logic
+
+**Tanggal:** Sesi implementasi ketiga
+
+### Pekerjaan yang Dilakukan
+
+#### Task 3.1 — Mutex (`inventory/core/mutex.js`)
+- Mengimplementasikan class `Mutex` berbasis async Promise-chain queue
+- `acquire()` — fast path (unlocked) vs slow path (enqueue Promise resolver)
+- `_buildRelease()` factory: mengembalikan fungsi `release()` yang idempotent, dengan watchdog `setTimeout` untuk force-release
+- Force-release setelah `mutexTimeoutMs` (default 5000ms): memanggil `release()` secara internal dan log `[WARN] [MUTEX] [CRITICAL] Mutex force-released` (Req 9.4)
+- FIFO ordering dijamin karena `_queue.shift()` mengambil waiter pertama
+- **11 unit tests** di `inventory/core/__tests__/mutex.test.js` — semua passing ✅
+  - Serial execution, FIFO ordering, isLocked, queueLength
+  - Force-release dengan `jest.useFakeTimers()`
+  - Concurrent 10 tasks tanpa deadlock
+
+#### Task 3.2 — InventoryService (`inventory/core/inventoryService.js`)
+- Mengimplementasikan class `InventoryService` yang mengorkestrasikan Mutex + MasterDB + SlaveDB
+- `processOrder(productId, quantity, requestId)`:
+  - Acquire mutex → `decrementStock` → release di `finally` block (deadlock-safe)
+  - Return `{ requestId, status, remainingStock, reason? }`
+- `getStatus(productId?)`:
+  - Snapshot simultaneous master + slave (Req 4.5)
+  - Return `{ masterStock, slaveStock, slaveLastUpdated, replicationLag, isSynced, mutexQueueLength }`
+- `reset(productId)`: mutex-protected reset ke initial stock (Req 7.5)
+- Structured logging untuk setiap operasi
+- **11 unit tests** di `inventory/core/__tests__/inventoryService.test.js` — semua passing ✅
+  - 100 concurrent orders pada stock 50 → tepat 50 sukses, stock = 0 (tidak pernah negatif)
+  - Mutex release on exception (mock DB yang throw)
+
+### Tantangan
+- Memastikan `release()` dipanggil bahkan ketika `decrementStock` melempar exception
+- Force-release timeout harus di-clear saat `release()` dipanggil normal untuk mencegah spurious release
+
+### Solusi
+- Menggunakan `try...finally` pattern di seluruh `processOrder` dan `reset` — `release()` selalu dipanggil
+- `_buildRelease()` menyimpan `timeoutHandle` dalam closure dan memanggil `clearTimeout(timeoutHandle)` sebagai langkah pertama di dalam `release()`
+- `release()` dibuat idempotent dengan flag `released` untuk mencegah double-release
+
+---
+
+## Status Saat Ini
+
+| Task | Status |
+|------|--------|
+| 1. Setup proyek | ✅ Selesai |
+| 2. Inventory DB Layer | ✅ Selesai (termasuk semua optional PBT) |
+| 3. Mutex + InventoryService | ✅ Selesai |
+| 4. Checkpoint — Inventory Core | ⏳ Menunggu |
+| 5. TCP Server | ⏳ Menunggu |
+| 6. Order Gateway TCP | ⏳ Menunggu |
+| 7. Order Gateway HTTP | ⏳ Menunggu |
+| 8. Checkpoint — Gateway Integration | ⏳ Menunggu |
+| 9. Client Simulator | ⏳ Menunggu |
+| 10. Frontend Dashboard | ⏳ Menunggu |
+| 11. Checkpoint — Dashboard & Simulator | ⏳ Menunggu |
+| 12. Integrasi & Wiring | ⏳ Menunggu |
+| 13. Final Checkpoint | ⏳ Menunggu |

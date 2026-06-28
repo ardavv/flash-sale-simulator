@@ -1,0 +1,11 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "description": "Frontend Dashboard — real-time metrics visualization (Chart.js via CDN)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

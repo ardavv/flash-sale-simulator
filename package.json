@@ -1,0 +1,19 @@
+{
+  "name": "flash-sale-ecommerce",
+  "version": "1.0.0",
+  "description": "Flash Sale E-Commerce Simulator — distributed systems demo",
+  "private": true,
+  "workspaces": [
+    "simulator",
+    "gateway",
+    "inventory",
+    "dashboard"
+  ],
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "fast-check": "^3.14.0"
+  },
+  "scripts": {
+    "test": "jest --runInBand"
+  }
+}
