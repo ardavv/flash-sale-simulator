@@ -1,1 +1,349 @@
-/* TODO: Task 10.2 — Dashboard styles: grid layout, sync/out-of-sync color indicators */
+/* 
+ * VARIABEL ROOT (TEMA WARNA & DESAIN MODERN)
+ * Tema mengusung warna Deep Dark dengan aksen Cyber-Glassmorphism
+ */
+:root {
+    --bg-color: #0b0f19;
+    --glass-bg: rgba(20, 25, 40, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --primary-color: #6366f1; /* Biru Indigo elegan */
+    --accent-color: #0ea5e9; /* Biru langit (Cyan) */
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    /* Konfigurasi Visual Status Stok */
+    --status-synced: #10b981; /* Hijau zamrud (Tersinkronisasi) */
+    --status-synced-bg: rgba(16, 185, 129, 0.15);
+    
+    --status-divergent: #ef4444; /* Merah (Kondisi Divergent/Jeda/Tidak Sinkron) */
+    --status-divergent-bg: rgba(239, 68, 68, 0.15);
+    --status-divergent-glow: rgba(239, 68, 68, 0.6);
+    
+    --status-idle: #eab308; /* Kuning (Menunggu) */
+}
+
+/* RESET DASAR */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    /* Cahaya Gradasi Latar (Radial) untuk efek 3D yang sangat halus */
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.1) 0px, transparent 50%);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+.dashboard-container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* BASE: PANEL KACA (GLASSMORPHISM) */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* Support Safari */
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Mikro-Animasi Sentuhan Kursor */
+.glass-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-panel h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+}
+
+/* ------------------------------------- */
+/* HEADER AREA                           */
+/* ------------------------------------- */
+.main-header .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.main-header h1 span {
+    color: var(--primary-color);
+    -webkit-text-fill-color: var(--primary-color);
+}
+
+/* Komponen Label Status Global */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(0,0,0,0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--status-idle);
+    border: 1px solid rgba(234, 179, 8, 0.2);
+    transition: all 0.3s;
+}
+
+.status-indicator.active {
+    color: var(--status-synced);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: currentColor; /* Ikut warna induknya */
+}
+
+.pulsing {
+    animation: pulse-idle 2s infinite;
+}
+
+/* Keyframes untuk indikator yang sedang memproses sesuatu */
+@keyframes pulse-idle {
+    0% { box-shadow: 0 0 0 0 currentColor; }
+    70% { box-shadow: 0 0 0 8px rgba(0,0,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+}
+
+/* ------------------------------------- */
+/* DASHBOARD GRID SYSTEM                 */
+/* ------------------------------------- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+/* ------------------------------------- */
+/* PANEL: METRIK PERFORMA                */
+/* ------------------------------------- */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.metric-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: background 0.2s ease;
+}
+
+.metric-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Sorotan Spesial untuk Kartu Speedup */
+.metric-card.highlight {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.1) 0%, rgba(14, 165, 233, 0.1) 100%);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.metric-value small {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* ------------------------------------- */
+/* PANEL: MASTER VS SLAVE DB STOCKS      */
+/* ------------------------------------- */
+.stock-panel {
+    grid-column: 2 / 3;
+}
+
+/* Spanduk (Banner) Informasi Lag/Sinkronisasi */
+.sync-status {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* TEMA: TERSINKRONISASI (HIJAU/BIRU) */
+.sync-status.synced {
+    background: var(--status-synced-bg);
+    color: var(--status-synced);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* TEMA: DIVERGENT/TIDAK SINKRON (MERAH/KUNING) */
+.sync-status.divergent {
+    background: var(--status-divergent-bg);
+    color: var(--status-divergent);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    /* Animasi berkedip bahaya */
+    animation: warning-pulse 1.2s infinite alternate;
+}
+
+@keyframes warning-pulse {
+    0% { box-shadow: 0 0 0 0 var(--status-divergent-bg); }
+    100% { box-shadow: 0 0 15px 0 var(--status-divergent-glow); }
+}
+
+.lag-text {
+    font-size: 0.85rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.3);
+}
+
+/* Kotak Komparasi Angka */
+.stock-comparison {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.db-node {
+    flex: 1;
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.db-node h3 {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.db-node .stock-value {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.25rem;
+    transition: color 0.3s ease;
+}
+
+.db-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Pewarnaan Angka Spesifik Node */
+.master-node .stock-value {
+    color: var(--accent-color); /* Biru Langit untuk Master */
+}
+
+/* Angka Slave berubah warna secara adaptif sesuai sinkronisasi */
+.slave-node.synced .stock-value {
+    color: var(--status-synced);
+}
+
+.slave-node.divergent .stock-value {
+    color: var(--status-divergent);
+}
+
+.vs-divider {
+    padding: 0 1rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.vs-divider svg {
+    width: 24px;
+    height: 24px;
+    opacity: 0.5;
+}
+
+/* ------------------------------------- */
+/* PANEL: CHART KANVAS                   */
+/* ------------------------------------- */
+.chart-panel {
+    grid-column: 1 / -1; /* Mengambil ruang seluruh lebar tabel (full width) */
+}
+
+.chart-container {
+    width: 100%;
+    height: 350px;
+    position: relative;
+}
+
+/* ------------------------------------- */
+/* DESAIN RESPONSIF (TAMPILAN PONSEL)    */
+/* ------------------------------------- */
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* Turun jadi 1 kolom */
+    }
+    .stock-panel {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 600px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    .stock-comparison {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .vs-divider {
+        transform: rotate(90deg);
+    }
+}

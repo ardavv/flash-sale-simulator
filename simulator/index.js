@@ -61,7 +61,7 @@ async function bootstrap() {
   const metricsResult = await runner.run();
   
   // 4. Teruskan rekam jejak tersebut ke sang Jurnalis Data (Metrics Reporter)
-  MetricsReporter.report(metricsResult);
+  await MetricsReporter.report(metricsResult);
 }
 
 // 5. Panggil fungsi utama dengan penjagaan global mutlak dari crash yang terselip

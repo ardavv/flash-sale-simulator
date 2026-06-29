@@ -1,1 +1,125 @@
-<!-- TODO: Task 10.2 — Main dashboard page: grid layout with metrics panel, bar chart, stock display -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Sale Simulator Dashboard</title>
+    
+    <!-- Tipografi Modern yang Terkesan Premium (Google Fonts) -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Merujuk ke File CSS Utama -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Chart.js CDN untuk Visualisasi Grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- HEADER UTAMA -->
+        <header class="glass-panel main-header">
+            <div class="header-content">
+                <h1>Flash Sale <span>Simulator</span></h1>
+                
+                <!-- Indikator Status Global -->
+                <div class="status-indicator" id="sim-status">
+                    <span class="status-dot pulsing" id="sim-status-dot"></span>
+                    <span id="sim-status-text">Menunggu Simulasi...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- KISI UTAMA (GRID LAYOUT) -->
+        <main class="dashboard-grid">
+            
+            <!-- PANEL 1: METRIK PERFORMA -->
+            <section class="glass-panel metrics-panel">
+                <h2>Komparasi Metrik Head-to-Head</h2>
+                <div class="metrics-grid">
+                    
+                    <!-- Kolom 1: Sequential -->
+                    <div class="metric-column">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--text-muted); font-size: 1rem; font-weight: 600;">Mode Sequential</h3>
+                        <div class="metric-card">
+                            <span class="metric-label">Exec Time</span>
+                            <div class="metric-value"><span id="seq-exec-time">-</span> <small>ms</small></div>
+                        </div>
+                        <div class="metric-card" style="margin-top: 1rem;">
+                            <span class="metric-label">Throughput</span>
+                            <div class="metric-value"><span id="seq-throughput">-</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Kolom 2: Parallel -->
+                    <div class="metric-column">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--text-muted); font-size: 1rem; font-weight: 600;">Mode Parallel</h3>
+                        <div class="metric-card">
+                            <span class="metric-label">Exec Time</span>
+                            <div class="metric-value"><span id="par-exec-time">-</span> <small>ms</small></div>
+                        </div>
+                        <div class="metric-card" style="margin-top: 1rem;">
+                            <span class="metric-label">Throughput</span>
+                            <div class="metric-value"><span id="par-throughput">-</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Kolom 3: Speedup -->
+                    <div class="metric-card highlight" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 100%;">
+                        <span class="metric-label">Speedup Factor</span>
+                        <div class="metric-value" style="font-size: 3.5rem; margin-top: 0.5rem;"><span id="metric-speedup">-</span><small style="font-size: 1.5rem;">x</small></div>
+                        <span style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 1rem;">(T_seq / T_par)</span>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- PANEL 2: TAMPILAN STOK (MASTER VS SLAVE) -->
+            <section class="glass-panel stock-panel">
+                <h2>Sinkronisasi Inventori</h2>
+                
+                <!-- Pita Status Sinkronisasi -->
+                <div class="sync-status synced" id="sync-indicator-banner">
+                    <span id="sync-text">Sistem Tersinkronisasi</span>
+                    <span id="lag-text" class="lag-text">Lag: 0ms</span>
+                </div>
+                
+                <div class="stock-comparison">
+                    <div class="db-node master-node">
+                        <h3>Master DB</h3>
+                        <div class="stock-value" id="master-stock">0</div>
+                        <div class="db-subtitle">Node Utama (Write)</div>
+                    </div>
+                    
+                    <div class="vs-divider">
+                        <!-- Ikon Pemisah Sederhana SVG -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                        </svg>
+                    </div>
+                    
+                    <div class="db-node slave-node synced" id="slave-node-container">
+                        <h3>Slave DB</h3>
+                        <div class="stock-value" id="slave-stock">0</div>
+                        <div class="db-subtitle">Node Replikasi (Read)</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANEL 3: KANVAS GRAFIK -->
+            <section class="glass-panel chart-panel">
+                <h2>Komparasi Arsitektur (Sequential vs Parallel)</h2>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Referensi Script JS yang akan dibangun pada Task 10.3 -->
+    <!-- Catatan: Order file di sini bisa disesuaikan nanti -->
+    <script src="js/metricsPanel.js"></script>
+    <script src="js/stockDisplay.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

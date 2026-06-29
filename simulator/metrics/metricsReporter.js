@@ -13,7 +13,7 @@ class MetricsReporter {
    * Menghasilkan laporan dari objek hasil metrik
    * @param {Object} metricsResult - Objek kembalian dari MetricsCollector.finalize()
    */
-  static report(metricsResult) {
+  static async report(metricsResult) {
     // 1. Tampilkan Visualisasi Rapi ke Terminal menggunakan console.table
     console.log('\n=============================================');
     console.log('           LAPORAN METRIK SIMULASI           ');
@@ -52,6 +52,20 @@ class MetricsReporter {
     
     console.log(`[INFO] Rekam jejak simulasi ini berhasil diarsipkan di:`);
     console.log(`       -> ${filePath}\n`);
+    
+    // 4. Penyiaran Data ke Dashboard via HTTP POST (Webhook)
+    try {
+      const dashboardUrl = process.env.DASHBOARD_URL || 'http://localhost:8080';
+      await fetch(`${dashboardUrl}/api/metrics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(metricsResult)
+      });
+      console.log(`[INFO] Sinyal metrik berhasil diluncurkan ke Dashboard UI.`);
+    } catch (error) {
+      // Graceful fail: Abaikan tanpa merusak simulasi jika dashboard tidak/belum dinyalakan
+      console.log(`[WARN] Penyiaran metrik ke Dashboard diabaikan (Server UI offline).`);
+    }
     
     return filePath;
   }
