@@ -63,67 +63,67 @@ Rencana implementasi ini membangun sistem terdistribusi Flash Sale Simulator sec
 - [~] 4. Checkpoint — Inventory Core
   - Pastikan semua unit test untuk `MasterDB`, `SlaveDB`, `Mutex`, dan `InventoryService` lolos. Tanya kepada user jika ada pertanyaan.
 
-- [ ] 5. Implementasi Inventory Coordinator — TCP Server
-  - [~] 5.1 Implementasi `TcpServer` (`inventory/server/tcpServer.js`)
+- [x] 5. Implementasi Inventory Coordinator — TCP Server
+  - [x] 5.1 Implementasi `TcpServer` (`inventory/server/tcpServer.js`)
     - Terima koneksi TCP, buffer stream, pisahkan pesan berdasarkan karakter `\n`, parse JSON
     - Handle fragmented messages (gabungkan buffer hingga `\n` ditemukan)
     - Jika pesan bukan JSON valid, kirim `{ requestId: null, status: "error", reason: "invalid_json" }` tanpa crash
     - Ketika koneksi terputus, bersihkan resource terkait koneksi tersebut
     - _Requirements: 3.2, 3.3, 8.2, 8.4, 9.3_
 
-  - [ ]* 5.2 Tulis property test untuk TcpServer — Round-Trip Parsing TCP
+  - [x]* 5.2 Tulis property test untuk TcpServer — Round-Trip Parsing TCP
     - **Property 6: Round-Trip Parsing Pesan TCP**
     - Generate arbitrary JSON objects, serialize + `\n`, split menjadi fragmen acak, gabungkan, parse, assert hasil identik dengan objek asli
     - **Validates: Requirements 8.1, 8.2, 8.3, 8.4**
     - File: `inventory/server/__tests__/tcpParser.test.js`
 
-  - [~] 5.3 Implementasi entry point Inventory Coordinator (`inventory/index.js`)
+  - [x] 5.3 Implementasi entry point Inventory Coordinator (`inventory/index.js`)
     - Inisialisasi `MasterDB`, `SlaveDB`, `ReplicationManager`, `Mutex`, `InventoryService`, dan `TcpServer`
     - Inject dependencies ke `InventoryService`
     - Handle pesan TCP tipe `order`, `status`, `reset`, dan `init` dengan memanggil metode yang sesuai di `InventoryService`
     - Register `process.on('uncaughtException', ...)` untuk logging tanpa crash
     - _Requirements: 3.1, 3.10, 7.2, 9.2, 9.5_
 
-- [ ] 6. Implementasi Order Gateway — TCP Client dan Request Correlator
-  - [~] 6.1 Implementasi `RequestCorrelator` (`gateway/tcp/requestCorrelator.js`)
+- [x] 6. Implementasi Order Gateway — TCP Client dan Request Correlator
+  - [x] 6.1 Implementasi `RequestCorrelator` (`gateway/tcp/requestCorrelator.js`)
     - Implementasikan `register(requestId, timeoutMs)` yang mengembalikan `Promise<tcpResponse>`
     - Implementasikan `resolve(requestId, data)` yang me-resolve promise yang sesuai
     - Implementasikan `getPendingCount()` untuk monitoring
     - Jika timeout terlewati, reject promise dengan error timeout
     - _Requirements: 2.7, 8.5_
 
-  - [ ]* 6.2 Tulis property test untuk RequestCorrelator — Korelasi Request-Response TCP
+  - [x]* 6.2 Tulis property test untuk RequestCorrelator — Korelasi Request-Response TCP
     - **Property 4: Korelasi Request-Response TCP Tidak Silang**
     - Generate batch UUID messages secara acak, resolve dengan data yang sesuai, assert setiap response.requestId === sent requestId
     - **Validates: Requirements 8.5**
     - File: `gateway/tcp/__tests__/correlation.test.js`
 
-  - [~] 6.3 Implementasi `TcpClient` (`gateway/tcp/tcpClient.js`)
+  - [x] 6.3 Implementasi `TcpClient` (`gateway/tcp/tcpClient.js`)
     - Implementasikan koneksi TCP persisten dengan `connect()`, `send(messageObj)`, `isConnected()`, `onDisconnect(callback)`, dan `destroy()`
     - Auto-reconnect dengan interval 1 detik, maksimal 5 kali percobaan
     - Setiap `send` menghasilkan pesan JSON diakhiri `\n`; parse respons berdasarkan `\n` delimiter
     - _Requirements: 2.8, 2.9, 2.10_
 
-- [ ] 7. Implementasi Order Gateway — HTTP Server dan Validasi
-  - [~] 7.1 Implementasi `validatePayload` middleware (`gateway/middleware/validatePayload.js`)
+- [x] 7. Implementasi Order Gateway — HTTP Server dan Validasi
+  - [x] 7.1 Implementasi `validatePayload` middleware (`gateway/middleware/validatePayload.js`)
     - Validasi `productId` adalah string non-kosong → 400 jika tidak
     - Validasi `quantity` adalah integer positif (> 0, bukan float) → 400 jika tidak
     - Jika valid, lanjutkan ke `next()`
     - _Requirements: 2.2, 2.3, 2.4_
 
-  - [ ]* 7.2 Tulis property test untuk validatePayload — Validasi Payload Komprehensif
+  - [x]* 7.2 Tulis property test untuk validatePayload — Validasi Payload Komprehensif
     - **Property 5: Validasi Payload Komprehensif**
     - Generate arbitrary `{ productId, quantity }` termasuk invalid values (empty string, negative, float, null, dll.), assert HTTP 400 untuk invalid dan lanjut ke next() untuk valid
     - **Validates: Requirements 2.2, 2.3, 2.4**
     - File: `gateway/middleware/__tests__/validate.test.js`
 
-  - [~] 7.3 Implementasi route `/order` dan `/status` (`gateway/routes/orderRoutes.js`)
+  - [x] 7.3 Implementasi route `/order` dan `/status` (`gateway/routes/orderRoutes.js`)
     - `POST /order`: generate `requestId` (UUID v4), register ke `RequestCorrelator`, kirim ke `TcpClient`, tunggu respons, kembalikan ke client
     - `GET /status`: kirim pesan TCP tipe `status` ke Inventory, kembalikan respons sebagai JSON
     - Return HTTP 503 jika TcpClient tidak terkoneksi atau timeout
     - _Requirements: 2.1, 2.5, 2.6, 2.7_
 
-  - [~] 7.4 Implementasi entry point Order Gateway (`gateway/index.js`)
+  - [x] 7.4 Implementasi entry point Order Gateway (`gateway/index.js`)
     - Inisialisasi Express, `TcpClient`, `RequestCorrelator`, mount middleware dan routes
     - Register `process.on('uncaughtException', ...)` untuk logging tanpa crash
     - Baca konfigurasi dari `config.js` atau environment variables
@@ -132,8 +132,8 @@ Rencana implementasi ini membangun sistem terdistribusi Flash Sale Simulator sec
 - [x] 8. Checkpoint — Gateway dan Inventory Integration
   - Pastikan semua test unit untuk middleware, correlator, dan TCP client lolos. Uji coba interaksi API berhasil.
 
-- [ ] 9. Implementasi Client Simulator — Worker Thread dan Runner
-  - [~] 9.1 Implementasi `requestWorker.js` (`simulator/worker/requestWorker.js`)
+- [x] 9. Implementasi Client Simulator — Worker Thread dan Runner
+  - [x] 9.1 Implementasi `requestWorker.js` (`simulator/worker/requestWorker.js`)
     - Baca `workerData` (`{ gatewayUrl, requests, timeoutMs }`)
     - Iterasi setiap request dalam `requests` array, kirim HTTP POST ke `gatewayUrl`
     - Kirim `{ type: "result", requestId, status, responseTimeMs, statusCode }` via `parentPort.postMessage()`
@@ -141,53 +141,53 @@ Rencana implementasi ini membangun sistem terdistribusi Flash Sale Simulator sec
     - Handle timeout 10 detik dan `ECONNREFUSED` sebagai failure
     - _Requirements: 1.2, 1.8, 1.9_
 
-  - [~] 9.2 Implementasi `MetricsCollector` (`simulator/metrics/metricsCollector.js`)
+  - [x] 9.2 Implementasi `MetricsCollector` (`simulator/metrics/metricsCollector.js`)
     - Implementasikan `start()`, `recordSuccess(responseTimeMs)`, `recordFailure(reason)`, dan `finalize()` yang mengembalikan `MetricsResult`
     - `finalize()` harus menghasilkan `executionTimeMs`, `throughputRps`, `successCount`, `failCount`, `sessionId`, `mode`, `workerCount`, `totalRequests`, `timestamp`
     - _Requirements: 1.6, 1.7, 5.1, 5.3, 5.5_
 
-  - [ ]* 9.3 Tulis property test untuk MetricsCollector — Kebenaran Kalkulasi Metrik
+  - [x]* 9.3 Tulis property test untuk MetricsCollector — Kebenaran Kalkulasi Metrik
     - **Property 7: Kebenaran Kalkulasi Metrik Performa**
     - Generate arbitrary `(startTime, endTime, successCount, failCount)` dengan `endTime > startTime`, assert `executionTimeMs = endTime - startTime`, `throughputRps = successCount / (executionTimeMs / 1000)`, `successCount + failCount = totalRequests`
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.5**
     - File: `simulator/metrics/__tests__/calculations.test.js`
 
-  - [~] 9.4 Implementasi `ParallelRunner` (`simulator/runner/parallelRunner.js`)
+  - [x] 9.4 Implementasi `ParallelRunner` (`simulator/runner/parallelRunner.js`)
     - Spawn `workerCount` Worker Threads, distribusikan `totalRequests` secara merata (`floor(totalRequests / workerCount)`)
     - Kumpulkan hasil dari semua worker via `worker.on('message', ...)`
     - Gunakan `MetricsCollector` untuk mengumpulkan hasil dan panggil `finalize()` setelah semua worker selesai
     - _Requirements: 1.2, 1.4, 1.5_
 
-  - [~] 9.5 Implementasi `SequentialRunner` (`simulator/runner/sequentialRunner.js`)
+  - [x] 9.5 Implementasi `SequentialRunner` (`simulator/runner/sequentialRunner.js`)
     - Kirim permintaan satu per satu secara berurutan tanpa Worker Thread
     - Gunakan `MetricsCollector` untuk mengumpulkan hasil
     - _Requirements: 1.3_
 
-  - [~] 9.6 Implementasi `MetricsReporter` (`simulator/metrics/metricsReporter.js`)
+  - [x] 9.6 Implementasi `MetricsReporter` (`simulator/metrics/metricsReporter.js`)
     - Implementasikan `printSummary(result)` menggunakan `console.table`
     - Implementasikan `saveToFile(result)` menyimpan ke `results/metrics-{timestamp}.json`
     - Implementasikan `sendToDashboard(result, dashboardUrl)` via HTTP POST
     - _Requirements: 1.7, 5.4, 5.6_
 
-  - [~] 9.7 Implementasi entry point Client Simulator (`simulator/index.js`)
+  - [x] 9.7 Implementasi entry point Client Simulator (`simulator/index.js`)
     - Baca konfigurasi dari `config.js` atau argumen baris perintah
     - Validasi mode: jika bukan `sequential` atau `parallel`, cetak error dan `process.exit(1)`
     - Pilih runner berdasarkan mode, jalankan, kirim hasil ke `MetricsReporter`
     - Untuk menghitung Speedup: jika file hasil mode lain tersedia di `results/`, baca dan hitung `S = T_sequential / T_parallel`
     - _Requirements: 1.1, 1.6, 1.10, 5.2, 5.4_
 
-- [ ] 10. Implementasi Frontend Dashboard
-  - [~] 10.1 Implementasi Dashboard Server (`dashboard/server.js`)
+- [~] 10. Implementasi Frontend Dashboard
+  - [ ] 10.1 Implementasi Dashboard Server (`dashboard/server.js`)
     - Buat HTTP server untuk menyajikan static files `index.html`, `css/`, `js/`
     - Implementasikan `GET /api/metrics`, `POST /api/metrics`, `GET /api/status` (proxy ke Order Gateway dengan cache 2 detik), dan `GET /health`
     - _Requirements: 6.1, 6.6, 6.8_
 
-  - [~] 10.2 Implementasi halaman Dashboard (`dashboard/index.html`, `dashboard/css/style.css`)
+  - [ ] 10.2 Implementasi halaman Dashboard (`dashboard/index.html`, `dashboard/css/style.css`)
     - Buat layout grid satu halaman dengan panel: Metrics (Execution Time, Throughput, Speedup), Bar Chart, Stock Display (Master vs Slave), status indikator simulasi
     - Style CSS: warna berbeda untuk kondisi Master/Slave tidak sinkron vs sinkron
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [~] 10.3 Implementasi JavaScript Dashboard (`dashboard/js/app.js`, `charts.js`, `stockDisplay.js`, `metricsPanel.js`)
+  - [ ] 10.3 Implementasi JavaScript Dashboard (`dashboard/js/app.js`, `charts.js`, `stockDisplay.js`, `metricsPanel.js`)
     - `app.js`: inisialisasi polling setiap 2 detik ke `/api/status` dan `/api/metrics`, bind event handlers, tampilkan error jika koneksi gagal
     - `charts.js`: Bar chart perbandingan Execution Time Sequential vs Parallel menggunakan Chart.js (CDN)
     - `stockDisplay.js`: tampilkan Master Stock vs Slave Stock, indikator divergence jika berbeda
@@ -198,7 +198,7 @@ Rencana implementasi ini membangun sistem terdistribusi Flash Sale Simulator sec
   - Pastikan semua property test dan unit test lolos. Tanya kepada user jika ada pertanyaan.
 
 - [ ] 12. Integrasi dan Wiring Komponen
-  - [~] 12.1 Buat file `README.md` untuk setiap komponen
+  - [ ] 12.1 Buat file `README.md` untuk setiap komponen
     - Tulis `simulator/README.md`, `gateway/README.md`, `inventory/README.md`, `dashboard/README.md` masing-masing dengan instruksi cara menjalankan komponen secara independen
     - _Requirements: 10.3_
 

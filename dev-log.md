@@ -155,6 +155,40 @@ Log ini mencatat setiap fase pengembangan: pekerjaan yang dilakukan, tantangan y
 
 ---
 
+## Fase 5 — Task 9: Simulator Klien Pembombardir (Load Generator)
+
+**Tanggal:** Sesi implementasi kelima
+
+### Pekerjaan yang Dilakukan
+
+#### Task 9.1 — Eksekutor Beban (Worker Thread)
+- Mengimplementasikan `requestWorker.js` yang bertugas sebagai *Thread* independen.
+- Memakai `fetch` bawaan Node (dipadukan dengan `AbortController` untuk batas *timeout* 10 detik) alih-alih dependensi eksternal.
+- Setiap kali transaksi HTTP diproses (atau terputus karena `ECONNREFUSED`/`AbortError`), worker ini akan melemparkan pesannya (keberhasilan/kegagalan beserta kecepatan respons) ke pelari utama *(Main Thread)* melalui `parentPort.postMessage`.
+
+#### Task 9.2 & 9.3 — Kolektor Metrik dan Uji Matematis
+- Menciptakan `MetricsCollector` dengan algoritma kalkulasi presisi tinggi menggunakan `performance.now()`.
+- Mengimplementasikan pengaman (*safeguard*) logika apabila simulasi selesai secara instan (*0 ms*) agar metrik *Throughput* tidak memuntahkan cacat matematis berupa pembagian dengan nol (*Infinity* / *NaN*).
+- Menulis dan meloloskan Property Test `metrics.test.js` dengan menyimulasikan laju waktu secara prediktif (menipu modul `perf_hooks` via Jest).
+
+#### Task 9.4 & 9.5 — Algoritma Paralel dan Sekuensial
+- **SequentialRunner**: Membombardir *Gateway* secara linear, memblokir interaksi perulangan `for` hingga pesanan tuntas dengan perintah `await`. Bertindak sebagai pijakan perbandingan awal *(Baseline)*.
+- **ParallelRunner**: Mendistribusikan puluhan ribu *request* secara merata ke dalam pasukan *Worker Threads*. Turut membagikan sisa pembagian (*remainder*) secara teliti, serta melindungi pelari agar tak membeku selamanya ketika ada *Worker* yang tumbang *(Crash)* dengan memantau *event* `exit`.
+
+#### Task 9.6 & 9.7 — Visualisasi dan Titik Masuk (CLI)
+- Menyiapkan `MetricsReporter` untuk mempercantik hasil dalam wujud matriks tabel (`console.table`), sekaligus mencetaknya permanen dalam sebuah dokumen rekam jejak `JSON`. Modul ini dibekali insting pembuatan direktori otomatis.
+- Membangun antarmuka CLI pada `simulator/index.js` dengan parser argumen nol-dependensi (`process.argv`), memfasilitasi parameter seperti `--mode`, `--requests`, dan `--workers`. Pintu pelindung `process.exit(1)` diletakkan untuk menjamin penutupan yang bersih pada kondisi kritis.
+
+### Tantangan
+- Terjadinya kesalahan peletakan penutup kurung *Property Test* yang memicu error Jest `TypeError: p is not a function`.
+- Pembagian dengan nol pada hitungan *Throughput (RPS)* ketika durasi simulasi sekuensial dieksekusi mendekati 0 milidetik, berpotensi memecahkan antarmuka Visualisasi di fase *Dashboard* selanjutnya.
+
+### Solusi
+- Penyesuaian sintaks secara akurat di dalam parameter ujung fungsi `fc.property`.
+- Membekali hitungan RPS dengan kondisi cadangan (`fallback`) menggunakan limit kasar (*fallback = successCount*) sehingga yang dikeluarkan adalah angka konkret, bukan `Infinity` maupun `NaN`.
+
+---
+
 ## Status Saat Ini
 
 | Task | Status |
@@ -166,9 +200,9 @@ Log ini mencatat setiap fase pengembangan: pekerjaan yang dilakukan, tantangan y
 | 5. TCP Server | ✅ Selesai |
 | 6. Order Gateway TCP | ✅ Selesai |
 | 7. Order Gateway HTTP | ✅ Selesai |
-| 8. Checkpoint — Gateway Integration | ⏳ Menunggu Pemeriksaan |
-| 9. Client Simulator | ⏳ Menunggu |
-| 10. Frontend Dashboard | ⏳ Menunggu |
+| 8. Checkpoint — Gateway Integration | ✅ Selesai |
+| 9. Client Simulator | ✅ Selesai |
+| 10. Frontend Dashboard | ⏳ Sedang Dikerjakan |
 | 11. Checkpoint — Dashboard & Simulator | ⏳ Menunggu |
 | 12. Integrasi & Wiring | ⏳ Menunggu |
 | 13. Final Checkpoint | ⏳ Menunggu |
