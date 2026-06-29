@@ -189,6 +189,43 @@ Log ini mencatat setiap fase pengembangan: pekerjaan yang dilakukan, tantangan y
 
 ---
 
+## Fase 6 — Task 10: Frontend Dashboard
+
+**Tanggal:** Sesi implementasi keenam
+
+### Pekerjaan yang Dilakukan
+- Membangun `dashboard/server.js` sebagai server statis dan proxy API menggunakan Express.js.
+- Mendesain antarmuka UI di `index.html` dan `style.css` dengan tata letak grid, membedakan warna secara visual saat Master dan Slave mengalami divergence (tidak sinkron).
+- Mengimplementasikan logika JavaScript (`app.js`, `charts.js`, `stockDisplay.js`, `metricsPanel.js`) yang melakukan polling setiap 2 detik ke `/api/status` dan menerima data metrik.
+- Menambahkan Chart.js untuk menggambar diagram batang secara dinamis yang membandingkan Execution Time dan Throughput.
+
+### Tantangan
+- Menyajikan metrik dari *Simulator* yang berjalan di terminal ke *Dashboard* yang berjalan di browser secara real-time.
+
+### Solusi
+- Menambahkan webhook POST `/api/metrics` pada Dashboard Server agar *Simulator* (via `MetricsReporter`) dapat mengirimkan muatan JSON hasil simulasi secara langsung ke memori Dashboard untuk dirender.
+
+---
+
+## Fase 7 — Task 12: Pengujian Integrasi (End-to-End)
+
+**Tanggal:** Sesi implementasi ketujuh
+
+### Pekerjaan yang Dilakukan
+- Menulis dokumen README.md untuk keempat komponen.
+- Menulis skrip pengujian terprogram `integration.test.js` (Anti-Overselling) yang secara otomatis menyalakan proses *Inventory* dan *Gateway*, lalu membombardirnya dengan 2000 request menggunakan *ParallelRunner*.
+- Menulis pengujian `performance.test.js` (Speedup) untuk memverifikasi keunggulan eksekusi paralel dibandingkan sekuensial pada 1000 request.
+
+### Tantangan
+- *Race Condition* di level soket TCP di mana pengujian Jest meminta status stok akhir di saat *Inventory* masih sibuk memproses sisa antrean *Mutex*, yang berujung pada timeout (HTTP 503).
+- *Port Collision* di mana env variable nama port berbeda antara skrip test dan aplikasi.
+
+### Solusi
+- Menambahkan jeda waktu asinkron (`setTimeout(2000)`) sebelum penarikan data status akhir agar Event Loop Node.js sempat menyelesaikan tugas-tugas I/O.
+- Menyamakan argumen Environment Variables menjadi `TCP_PORT` saat menyalakan proses anak (child process).
+
+---
+
 ## Status Saat Ini
 
 | Task | Status |
@@ -202,7 +239,7 @@ Log ini mencatat setiap fase pengembangan: pekerjaan yang dilakukan, tantangan y
 | 7. Order Gateway HTTP | ✅ Selesai |
 | 8. Checkpoint — Gateway Integration | ✅ Selesai |
 | 9. Client Simulator | ✅ Selesai |
-| 10. Frontend Dashboard | ⏳ Sedang Dikerjakan |
-| 11. Checkpoint — Dashboard & Simulator | ⏳ Menunggu |
-| 12. Integrasi & Wiring | ⏳ Menunggu |
-| 13. Final Checkpoint | ⏳ Menunggu |
+| 10. Frontend Dashboard | ✅ Selesai |
+| 11. Checkpoint — Dashboard & Simulator | ✅ Selesai |
+| 12. Integrasi & Wiring | ✅ Selesai |
+| 13. Final Checkpoint | ✅ Selesai |

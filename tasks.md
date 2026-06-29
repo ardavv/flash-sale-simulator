@@ -176,45 +176,45 @@ Rencana implementasi ini membangun sistem terdistribusi Flash Sale Simulator sec
     - Untuk menghitung Speedup: jika file hasil mode lain tersedia di `results/`, baca dan hitung `S = T_sequential / T_parallel`
     - _Requirements: 1.1, 1.6, 1.10, 5.2, 5.4_
 
-- [~] 10. Implementasi Frontend Dashboard
-  - [ ] 10.1 Implementasi Dashboard Server (`dashboard/server.js`)
+- [x] 10. Implementasi Frontend Dashboard
+  - [x] 10.1 Implementasi Dashboard Server (`dashboard/server.js`)
     - Buat HTTP server untuk menyajikan static files `index.html`, `css/`, `js/`
     - Implementasikan `GET /api/metrics`, `POST /api/metrics`, `GET /api/status` (proxy ke Order Gateway dengan cache 2 detik), dan `GET /health`
     - _Requirements: 6.1, 6.6, 6.8_
 
-  - [ ] 10.2 Implementasi halaman Dashboard (`dashboard/index.html`, `dashboard/css/style.css`)
+  - [x] 10.2 Implementasi halaman Dashboard (`dashboard/index.html`, `dashboard/css/style.css`)
     - Buat layout grid satu halaman dengan panel: Metrics (Execution Time, Throughput, Speedup), Bar Chart, Stock Display (Master vs Slave), status indikator simulasi
     - Style CSS: warna berbeda untuk kondisi Master/Slave tidak sinkron vs sinkron
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [ ] 10.3 Implementasi JavaScript Dashboard (`dashboard/js/app.js`, `charts.js`, `stockDisplay.js`, `metricsPanel.js`)
+  - [x] 10.3 Implementasi JavaScript Dashboard (`dashboard/js/app.js`, `charts.js`, `stockDisplay.js`, `metricsPanel.js`)
     - `app.js`: inisialisasi polling setiap 2 detik ke `/api/status` dan `/api/metrics`, bind event handlers, tampilkan error jika koneksi gagal
     - `charts.js`: Bar chart perbandingan Execution Time Sequential vs Parallel menggunakan Chart.js (CDN)
     - `stockDisplay.js`: tampilkan Master Stock vs Slave Stock, indikator divergence jika berbeda
     - `metricsPanel.js`: render nilai Execution Time, Throughput, Speedup
     - _Requirements: 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8_
 
-- [~] 11. Checkpoint — Dashboard dan Simulator
+- [x] 11. Checkpoint — Dashboard dan Simulator
   - Pastikan semua property test dan unit test lolos. Tanya kepada user jika ada pertanyaan.
 
-- [ ] 12. Integrasi dan Wiring Komponen
-  - [ ] 12.1 Buat file `README.md` untuk setiap komponen
+- [x] 12. Integrasi dan Wiring Komponen
+  - [x] 12.1 Buat file `README.md` untuk setiap komponen
     - Tulis `simulator/README.md`, `gateway/README.md`, `inventory/README.md`, `dashboard/README.md` masing-masing dengan instruksi cara menjalankan komponen secara independen
     - _Requirements: 10.3_
 
-  - [ ]* 12.2 Tulis integration test end-to-end — Anti-Overselling
+  - [x]* 12.2 Tulis integration test end-to-end — Anti-Overselling
     - Test 5000 permintaan serentak tidak menyebabkan overselling (stok >= 0 setelah semua operasi)
     - Test TCP message fragmentation ditangani dengan benar
     - Test gateway melakukan reconnect ke inventory setelah koneksi TCP terputus
     - **Validates: Requirements 3.4, 3.9, 8.4, 2.9**
 
-  - [ ]* 12.3 Tulis integration test end-to-end — Parallel < Sequential (Speedup > 1)
+  - [x]* 12.3 Tulis integration test end-to-end — Parallel < Sequential (Speedup > 1)
     - **Property 8: Keunggulan Waktu Eksekusi Parallel vs Sequential**
     - Jalankan kedua mode dalam kondisi sistem yang sama, assert `tParallel < tSequential` sehingga `speedup > 1`
     - **Validates: Requirements 5.2, 1.4, 1.5**
     - File: `simulator/__tests__/performance.test.js`
 
-- [~] 13. Final Checkpoint — Semua Komponen Terintegrasi
+- [x] 13. Final Checkpoint — Semua Komponen Terintegrasi
   - Pastikan semua test (unit, property, integration) lolos. Tanya kepada user jika ada pertanyaan.
 
 ---
